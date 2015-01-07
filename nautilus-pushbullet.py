@@ -72,7 +72,7 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
 
         # Top menu
         top_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push',
-                                         label='Push to Pushbullet',
+                                         label='Pushbullet',
                                          tip='',
                                          icon='')
 
