@@ -30,7 +30,6 @@ def write_config(api, exclude=''):
         config.write(configfile)
 
 
-
 class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
 
     def __init__(self):
@@ -45,12 +44,8 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
             n.show()
             Notify.uninit()
 
-
-
-
-
     # Push files to specified devices
-    def push(self, menu, files, devices):
+    def push(self, menu, files, devices, contacts):
 
         for f in files:
             p = urlparse.urlparse(f.get_uri())
@@ -61,6 +56,8 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
                 if success:
                     for device in devices:
                         success, push = self.push_file(device=device, **file_data)
+                    for contact in contacts:
+                        success, push = self.push_file(contact=contact, **file_data)
 
     # Alter Nautilus menu items
     def get_file_items(self, window, files):
@@ -79,24 +76,25 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
                                          tip='',
                                          icon='')
 
-        submenu = Nautilus.Menu()
-        top_menuitem.set_submenu(submenu)
+
+        submenu_dev = Nautilus.Menu()
+        top_menuitem.set_submenu(submenu_dev)
 
         if self.devices == []:
             sub_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push::None',
                                              label='No devices, check configuration',
                                              tip='',
                                              icon='')
-            submenu.append_item(sub_menuitem)
+            submenu_dev.append_item(sub_menuitem)
         else:
             # Menu entry for sending to all devices
             sub_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push::All',
-                                             label='ALL',
+                                             label='All Devices',
                                              tip='',
                                              icon='')
 
             sub_menuitem.connect('activate', self.push, files, self.devices)
-            submenu.append_item(sub_menuitem)
+            submenu_dev.append_item(sub_menuitem)
 
         # Menu entries for sending to individual devices
         for device in devices:
@@ -106,10 +104,27 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
                                              tip='',
                                              icon='')
 
-            sub_menuitem.connect('activate', self.push, files, [device])
+            sub_menuitem.connect('activate', self.push, files, [device], [])
+            submenu_dev.append_item(sub_menuitem)
 
-            submenu.append_item(sub_menuitem)
+        # Contacts submenu entry
+        if len(self.contacts) > 0:
+            submenu_con = Nautilus.Menu()
+            sub_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push::Contacts',
+                                             label='Contacts',
+                                             tip='',
+                                             icon='')
 
+            sub_menuitem.set_submenu(submenu_con)
+            submenu_dev.append_item(sub_menuitem)
+
+            for contact in self.contacts:
+                sub_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push::Contacts'+contact.name,
+                                                    label=contact.name,
+                                                    tip='',
+                                                    icon='')
+                sub_menuitem.connect('activate', self.push, files, [], [contact])
+                submenu_con.append_item(sub_menuitem)
 
         return top_menuitem,
 
