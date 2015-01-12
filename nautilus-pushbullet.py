@@ -34,8 +34,7 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
 
     def __init__(self):
         self.api_key, self.exclude = read_config()
-        #self.exclude = 'Firefox'
-        #self.api_key = 'eEd1WXVecVkAa1rmvZRdiY0iBdisHMlI'
+
         super(test, self).__init__(api_key = self.api_key)
 
         if self.user_info == {}:
@@ -45,7 +44,7 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
             Notify.uninit()
 
     # Push files to specified devices
-    def push(self, menu, files, devices, contacts):
+    def push(self, menu, files, devices=[], contacts=[], channels=[]):
 
         for f in files:
             p = urlparse.urlparse(f.get_uri())
@@ -58,6 +57,8 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
                         success, push = self.push_file(device=device, **file_data)
                     for contact in contacts:
                         success, push = self.push_file(contact=contact, **file_data)
+                    for channel in channels:
+                        success, push = self.push_file(channel=channel, **file_data)
 
     # Alter Nautilus menu items
     def get_file_items(self, window, files):
@@ -104,7 +105,7 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
                                              tip='',
                                              icon='')
 
-            sub_menuitem.connect('activate', self.push, files, [device], [])
+            sub_menuitem.connect('activate', self.push, files, [device])
             submenu_dev.append_item(sub_menuitem)
 
         # Contacts submenu entry
@@ -126,6 +127,27 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
                                                     tip='',
                                                     icon='')
                 sub_menuitem.connect('activate', self.push, files, [], [contact])
+                submenu_con.append_item(sub_menuitem)
+
+        # Channels submenu entry
+        if len(self.channels) > 0:
+            submenu_con = Nautilus.Menu()
+            sub_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push::Channels',
+                                             label='Channels',
+                                             tip='',
+                                             icon='')
+
+            sub_menuitem.set_submenu(submenu_con)
+            submenu_dev.append_item(sub_menuitem)
+
+            for channel in self.channels:
+                if not contact.active:
+                    continue
+                sub_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push::Contacts'+channel.name,
+                                                    label=channel.name,
+                                                    tip='',
+                                                    icon='')
+                sub_menuitem.connect('activate', self.push, files, [], [], [channel])
                 submenu_con.append_item(sub_menuitem)
 
         return top_menuitem,
