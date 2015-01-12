@@ -119,6 +119,8 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
             submenu_dev.append_item(sub_menuitem)
 
             for contact in self.contacts:
+                if not contact.active:
+                    continue
                 sub_menuitem = Nautilus.MenuItem(name='NautilusPushbullet::Push::Contacts'+contact.name,
                                                     label=contact.name,
                                                     tip='',
