@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 
 from pushbullet import PushBullet
-from gi.repository import Nautilus, GObject, Notify
+from gi.repository import Nautilus, GObject, Notify, Gtk
 
 import urlparse
 import os.path
@@ -35,23 +35,48 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
     def __init__(self):
         self.api_key, self.exclude = read_config()
 
+        self.win = Gtk.Window(title="Popup Message")
+
         super(test, self).__init__(api_key = self.api_key)
 
         if self.user_info == {}:
-            Notify.init('pushbullet-nautilus')
-            n = Notify.Notification.new('Pushbullet-Nautilus not correctly configured', 'Please run ''nautilus-pushbullet'' in a Terminal to reconfigure', "dialog-information")
-            n.show()
-            Notify.uninit()
+            msg = 'Pushbullet-Nautilus not correctly configured.\nPlease run ''nautilus-pushbullet'' in a Terminal to reconfigure'
+            dialog = Gtk.MessageDialog(self.win, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, msg)
+            dialog.run()
+            dialog.destroy()
+            #Notify.init('pushbullet-nautilus')
+            #n = Notify.Notification.new('Pushbullet-Nautilus not correctly configured', 'Please run ''nautilus-pushbullet'' in a Terminal to reconfigure', "dialog-information")
+            #n.show()
+            #Notify.uninit()
 
     # Push files to specified devices
     def push(self, menu, files, devices=[], contacts=[], channels=[]):
 
+        all_files = []
+        dir = False
         for f in files:
             p = urlparse.urlparse(f.get_uri())
-            finalPath = os.path.abspath(os.path.join(p.netloc, p.path))
+            f = os.path.abspath(os.path.join(p.netloc, p.path))
 
-            with open(finalPath, "rb") as tmp:
-                success, file_data = self.upload_file(tmp, os.path.basename(finalPath))
+            if os.path.isdir(f):
+                dir = True
+                recursive_files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(f) for f in filenames]
+                all_files += recursive_files
+            else:
+                all_files.append(f)
+
+        if dir:
+            msg = "You have selected to push at least one directory. The selected files within will be pushed individually, without any folder structure.\nDo you want to push %d files individually?" % len(all_files)
+            dialog = Gtk.MessageDialog(self.win, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, msg)
+            test = dialog.run()
+            dialog.destroy()
+            if not test == Gtk.ResponseType.OK:
+                return
+
+        for f in all_files:
+
+            with open(f, "rb") as tmp:
+                success, file_data = self.upload_file(tmp, os.path.basename(f))
                 if success:
                     for device in devices:
                         success, push = self.push_file(device=device, **file_data)
@@ -62,11 +87,6 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
 
     # Alter Nautilus menu items
     def get_file_items(self, window, files):
-
-        # Skip for directories...pushing those files individually can lead to a huge mess
-        for file in files:
-            if file.is_directory():
-                return None
 
         # all devices that can be pushed to and are not excluded
         devices = [device for device in self.devices if device.pushable and not device.nickname == self.exclude]
