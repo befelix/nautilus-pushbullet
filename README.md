@@ -1,9 +1,9 @@
 # nautilus-pushbullet
-A Nautilus extension to push files via http://www.pushbullet.com. Pushing to individual devices and contacts is supported. Channels will follow as soon as the corresponding pull-request for python2-pushbullet is accepted.
+A Nautilus extension to push files via http://www.pushbullet.com. Pushing files to individual devices, contacts and channels is supported.
 
 Dependencies:
 * nautilus
-* python2-pushbullet (https://pypi.python.org/pypi/pushbullet.py/0.5.0)
+* python2-pushbullet (https://pypi.python.org/pypi/pushbullet.py)
 
 Installation:
  * sudo mkdir -p /usr/share/nautilus-python/extensions
