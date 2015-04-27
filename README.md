@@ -4,7 +4,7 @@ A Nautilus extension to push files via http://www.pushbullet.com. Pushing files 
 Dependencies:
 * nautilus
 * nautilus-python
-* python2-pushbullet (https://pypi.python.org/pypi/pushbullet.py)
+* python-pushbullet.py (https://pypi.python.org/pypi/pushbullet.py)
 
 Installation:
  * sudo mkdir -p /usr/share/nautilus-python/extensions
