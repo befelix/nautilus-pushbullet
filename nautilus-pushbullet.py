@@ -14,7 +14,7 @@ def read_config():
     config = ConfigParser.RawConfigParser()
     config.read(CONFIG_FILE)
 
-    api  = config.get('User Data', 'access_token')
+    api = config.get('User Data', 'access_token')
     excl = config.get('User Data', 'excluded_device')
 
     return api,excl
@@ -44,10 +44,6 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
             dialog = Gtk.MessageDialog(self.win, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, msg)
             dialog.run()
             dialog.destroy()
-            #Notify.init('pushbullet-nautilus')
-            #n = Notify.Notification.new('Pushbullet-Nautilus not correctly configured', 'Please run ''nautilus-pushbullet'' in a Terminal to reconfigure', "dialog-information")
-            #n.show()
-            #Notify.uninit()
 
     # Push files to specified devices
     def push(self, menu, files, devices=[], contacts=[], channels=[]):
@@ -76,14 +72,13 @@ class test(PushBullet, GObject.GObject, Nautilus.MenuProvider):
         for f in all_files:
 
             with open(f, "rb") as tmp:
-                success, file_data = self.upload_file(tmp, os.path.basename(f))
-                if success:
-                    for device in devices:
-                        success, push = self.push_file(device=device, **file_data)
-                    for contact in contacts:
-                        success, push = self.push_file(contact=contact, **file_data)
-                    for channel in channels:
-                        success, push = self.push_file(channel=channel, **file_data)
+                file_data = self.upload_file(tmp, os.path.basename(f))
+                for device in devices:
+                    self.push_file(device=device, **file_data)
+                for contact in contacts:
+                    self.push_file(contact=contact, **file_data)
+                for channel in channels:
+                    self.push_file(channel=channel, **file_data)
 
     # Alter Nautilus menu items
     def get_file_items(self, window, files):
