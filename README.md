@@ -3,6 +3,7 @@ A Nautilus extension to push files via http://www.pushbullet.com. Pushing files 
 
 Dependencies:
 * nautilus
+* nautilus-python
 * python2-pushbullet (https://pypi.python.org/pypi/pushbullet.py)
 
 Installation:
@@ -11,5 +12,7 @@ Installation:
  * sudo ln -s /usr/share/nautilus-python/extensions/nautilus-pushbullet.py /usr/bin/nautilus-pushbullet
  * nautilus-pushbullet
 
-The last commands propts you to enter you Access Token (API) and the current device name of pushbullet. The restricted device stops the script from pushing to the device you are currently working on. This command needs to be run only once.
+The last commands propts you to enter you Access Token (API) and the current device name of pushbullet (e.g. the name of your Browser).
+Entering the current device name makes sure that you do not push files to yourself.
+You only need to run the last command once.
  
